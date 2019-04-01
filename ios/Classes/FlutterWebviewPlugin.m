@@ -3,9 +3,10 @@
 static NSString *const CHANNEL_NAME = @"flutter_webview_plugin";
 
 // UIWebViewDelegate
-@interface FlutterWebviewPlugin() <WKNavigationDelegate, UIScrollViewDelegate> {
+@interface FlutterWebviewPlugin() <WKNavigationDelegate, UIScrollViewDelegate, WKUIDelegate> {
     BOOL _enableAppScheme;
     BOOL _enableZoom;
+    NSString* _invalidUrlRegex;
 }
 @end
 
@@ -83,6 +84,8 @@ static NSString *const CHANNEL_NAME = @"flutter_webview_plugin";
     NSString *userAgent = call.arguments[@"userAgent"];
     NSNumber *withZoom = call.arguments[@"withZoom"];
     NSNumber *scrollBar = call.arguments[@"scrollBar"];
+    NSNumber *withJavascript = call.arguments[@"withJavascript"];
+    _invalidUrlRegex = call.arguments[@"invalidUrlRegex"];
 
     if (clearCache != (id)[NSNull null] && [clearCache boolValue]) {
         [[NSURLCache sharedURLCache] removeAllCachedResponses];
@@ -105,15 +108,25 @@ static NSString *const CHANNEL_NAME = @"flutter_webview_plugin";
     }
 
     self.webview = [[WKWebView alloc] initWithFrame:rc];
+    self.webview.UIDelegate = self;
     self.webview.navigationDelegate = self;
     self.webview.scrollView.delegate = self;
     self.webview.hidden = [hidden boolValue];
     self.webview.scrollView.showsHorizontalScrollIndicator = [scrollBar boolValue];
     self.webview.scrollView.showsVerticalScrollIndicator = [scrollBar boolValue];
 
+    WKPreferences* preferences = [[self.webview configuration] preferences];
+    if ([withJavascript boolValue]) {
+        [preferences setJavaScriptEnabled:YES];
+    } else {
+        [preferences setJavaScriptEnabled:NO];
+    }
+
     _enableZoom = [withZoom boolValue];
 
-    [self.viewController.view addSubview:self.webview];
+    UIViewController* presentedViewController = self.viewController.presentedViewController;
+    UIViewController* currentViewController = presentedViewController != nil ? presentedViewController : self.viewController;
+    [currentViewController.view addSubview:self.webview];
 
     [self navigate:call];
 }
@@ -234,18 +247,37 @@ static NSString *const CHANNEL_NAME = @"flutter_webview_plugin";
         }];
 }
 
+- (bool)checkInvalidUrl:(NSURL*)url {
+  NSString* urlString = url != nil ? [url absoluteString] : nil;
+  if (_invalidUrlRegex != [NSNull null] && urlString != nil) {
+    NSError* error = NULL;
+    NSRegularExpression* regex =
+        [NSRegularExpression regularExpressionWithPattern:_invalidUrlRegex
+                                                  options:NSRegularExpressionCaseInsensitive
+                                                    error:&error];
+    NSTextCheckingResult* match = [regex firstMatchInString:urlString
+                                                    options:0
+                                                      range:NSMakeRange(0, [urlString length])];
+    return match != nil;
+  } else {
+    return false;
+  }
+}
+
 #pragma mark -- WkWebView Delegate
 - (void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction
     decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler {
 
+    BOOL isInvalid = [self checkInvalidUrl: navigationAction.request.URL];
+
     id data = @{@"url": navigationAction.request.URL.absoluteString,
-                @"type": @"shouldStart",
+                @"type": isInvalid ? @"abortLoad" : @"shouldStart",
                 @"navigationType": [NSNumber numberWithInt:navigationAction.navigationType]};
     [channel invokeMethod:@"onState" arguments:data];
 
     if (navigationAction.navigationType == WKNavigationTypeBackForward) {
         [channel invokeMethod:@"onBackPressed" arguments:nil];
-    } else {
+    } else if (!isInvalid) {
         id data = @{@"url": navigationAction.request.URL.absoluteString};
         [channel invokeMethod:@"onUrlChanged" arguments:data];
     }
@@ -254,12 +286,25 @@ static NSString *const CHANNEL_NAME = @"flutter_webview_plugin";
         ([webView.URL.scheme isEqualToString:@"http"] ||
          [webView.URL.scheme isEqualToString:@"https"] ||
          [webView.URL.scheme isEqualToString:@"about"])) {
-        decisionHandler(WKNavigationActionPolicyAllow);
+         if (isInvalid) {
+            decisionHandler(WKNavigationActionPolicyCancel);
+         } else {
+            decisionHandler(WKNavigationActionPolicyAllow);
+         }
     } else {
         decisionHandler(WKNavigationActionPolicyCancel);
     }
 }
 
+- (WKWebView *)webView:(WKWebView *)webView createWebViewWithConfiguration:(WKWebViewConfiguration *)configuration
+    forNavigationAction:(WKNavigationAction *)navigationAction windowFeatures:(WKWindowFeatures *)windowFeatures {
+
+    if (!navigationAction.targetFrame.isMainFrame) {
+        [webView loadRequest:navigationAction.request];
+    }
+
+    return nil;
+}
 
 - (void)webView:(WKWebView *)webView didStartProvisionalNavigation:(WKNavigation *)navigation {
     [channel invokeMethod:@"onState" arguments:@{@"type": @"startLoad", @"url": webView.URL.absoluteString}];
