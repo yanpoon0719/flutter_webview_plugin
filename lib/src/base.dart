@@ -23,15 +23,20 @@ class FlutterWebviewPlugin {
 
   final _channel = const MethodChannel(_kChannel);
 
+  final _onBack = StreamController<Null>.broadcast();
   final _onDestroy = StreamController<Null>.broadcast();
   final _onUrlChanged = StreamController<String>.broadcast();
   final _onStateChanged = StreamController<WebViewStateChanged>.broadcast();
   final _onScrollXChanged = StreamController<double>.broadcast();
   final _onScrollYChanged = StreamController<double>.broadcast();
+  final _onProgressChanged = new StreamController<double>.broadcast();
   final _onHttpError = StreamController<WebViewHttpError>.broadcast();
 
   Future<Null> _handleMessages(MethodCall call) async {
     switch (call.method) {
+      case 'onBack':
+        _onBack.add(null);
+        break;
       case 'onDestroy':
         _onDestroy.add(null);
         break;
@@ -43,6 +48,9 @@ class FlutterWebviewPlugin {
         break;
       case 'onScrollYChanged':
         _onScrollYChanged.add(call.arguments['yDirection']);
+        break;
+      case "onProgressChanged":
+        _onProgressChanged.add(call.arguments["progress"]);
         break;
       case 'onState':
         _onStateChanged.add(
@@ -60,6 +68,9 @@ class FlutterWebviewPlugin {
   /// Listening the OnDestroy LifeCycle Event for Android
   Stream<Null> get onDestroy => _onDestroy.stream;
 
+  /// Listening the back key press Event for Android
+  Stream<Null> get onBack => _onBack.stream;
+
   /// Listening url changed
   Stream<String> get onUrlChanged => _onUrlChanged.stream;
 
@@ -67,6 +78,9 @@ class FlutterWebviewPlugin {
   /// content is Map for type: {shouldStart(iOS)|startLoad|finishLoad}
   /// more detail than other events
   Stream<WebViewStateChanged> get onStateChanged => _onStateChanged.stream;
+
+  /// Listening web view loading progress estimation, value between 0.0 and 1.0
+  Stream<double> get onProgressChanged => _onProgressChanged.stream;
 
   /// Listening web view y position scroll change
   Stream<double> get onScrollYChanged => _onScrollYChanged.stream;
@@ -194,6 +208,7 @@ class FlutterWebviewPlugin {
     _onDestroy.close();
     _onUrlChanged.close();
     _onStateChanged.close();
+    _onProgressChanged.close();
     _onScrollXChanged.close();
     _onScrollYChanged.close();
     _onHttpError.close();
