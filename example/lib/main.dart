@@ -18,7 +18,10 @@ final Set<JavascriptChannel> jsChannels = [
       }),
 ].toSet();
 
-void main() => runApp(MyApp());
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(MyApp());
+}
 
 class MyApp extends StatelessWidget {
   final flutterWebViewPlugin = FlutterWebviewPlugin();
@@ -36,6 +39,7 @@ class MyApp extends StatelessWidget {
           return WebviewScaffold(
             url: selectedUrl,
             javascriptChannels: jsChannels,
+            mediaPlaybackRequiresUserGesture: false,
             appBar: AppBar(
               title: const Text('Widget WebView'),
             ),

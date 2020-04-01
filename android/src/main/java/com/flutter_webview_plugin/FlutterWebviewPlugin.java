@@ -113,6 +113,7 @@ public class FlutterWebviewPlugin implements MethodCallHandler, PluginRegistry.A
         boolean withJavascript = call.argument("withJavascript");
         boolean clearCache = call.argument("clearCache");
         boolean clearCookies = call.argument("clearCookies");
+        boolean mediaPlaybackRequiresUserGesture = call.argument("mediaPlaybackRequiresUserGesture");
         boolean withZoom = call.argument("withZoom");
         boolean displayZoomControls = call.argument("displayZoomControls");
         boolean withLocalStorage = call.argument("withLocalStorage");
@@ -126,6 +127,7 @@ public class FlutterWebviewPlugin implements MethodCallHandler, PluginRegistry.A
         String invalidUrlRegex = call.argument("invalidUrlRegex");
         boolean geolocationEnabled = call.argument("geolocationEnabled");
         boolean debuggingEnabled = call.argument("debuggingEnabled");
+        boolean ignoreSSLErrors = call.argument("ignoreSSLErrors");
 
         if (webViewManager == null || webViewManager.closed == true) {
             Map<String, Object> arguments = (Map<String, Object>) call.arguments;
@@ -144,6 +146,7 @@ public class FlutterWebviewPlugin implements MethodCallHandler, PluginRegistry.A
                 clearCache,
                 hidden,
                 clearCookies,
+                mediaPlaybackRequiresUserGesture,
                 userAgent,
                 url,
                 headers,
@@ -158,7 +161,8 @@ public class FlutterWebviewPlugin implements MethodCallHandler, PluginRegistry.A
                 useWideViewPort,
                 invalidUrlRegex,
                 geolocationEnabled,
-                debuggingEnabled
+                debuggingEnabled,
+                ignoreSSLErrors
         );
         result.success(null);
     }
