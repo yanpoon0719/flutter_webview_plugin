@@ -102,6 +102,7 @@ public class BrowserClient extends WebViewClient {
     @Override
     public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
         super.onReceivedError(view, errorCode, description, failingUrl);
+        view.loadUrl("about:blank");
         Map<String, Object> data = new HashMap<>();
         data.put("url", failingUrl);
         data.put("code", Integer.toString(errorCode));
