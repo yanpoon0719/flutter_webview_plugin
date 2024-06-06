@@ -219,7 +219,7 @@ static NSDictionary *defaultHeaders = nil;
 
                 if (headers != nil) {
                     [request setAllHTTPHeaderFields:headers];
-                } else {
+                } else if (defaultHeaders != nil) {
                     [request setAllHTTPHeaderFields:defaultHeaders];
                 }
 
@@ -278,7 +278,7 @@ static NSDictionary *defaultHeaders = nil;
         
         if (headers != nil) {
             [request setAllHTTPHeaderFields:headers];
-        } else {
+        } else if (defaultHeaders != nil) {
             [request setAllHTTPHeaderFields:defaultHeaders];
         }
         
