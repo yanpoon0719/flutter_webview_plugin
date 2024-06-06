@@ -35,7 +35,7 @@ class FlutterWebviewPlugin {
 
   final _onBack = StreamController<Null>.broadcast();
   final _onDestroy = StreamController<Null>.broadcast();
-  final _onUrlChanged = StreamController<String>.broadcast();
+  final _onUrlChanged = StreamController<WebViewUrlChanged>.broadcast();
   final _onStateChanged = StreamController<WebViewStateChanged>.broadcast();
   final _onScrollXChanged = StreamController<double>.broadcast();
   final _onScrollYChanged = StreamController<double>.broadcast();
@@ -57,7 +57,11 @@ class FlutterWebviewPlugin {
         _onDestroy.add(null);
         break;
       case 'onUrlChanged':
-        _onUrlChanged.add(call.arguments['url']);
+        _onUrlChanged.add(
+          WebViewUrlChanged.fromMap(
+            Map<String, dynamic>.from(call.arguments),
+          ),
+        );
         break;
       case 'onScrollXChanged':
         _onScrollXChanged.add(call.arguments['xDirection']);
@@ -93,7 +97,7 @@ class FlutterWebviewPlugin {
   Stream<Null> get onBack => _onBack.stream;
 
   /// Listening url changed
-  Stream<String> get onUrlChanged => _onUrlChanged.stream;
+  Stream<WebViewUrlChanged> get onUrlChanged => _onUrlChanged.stream;
 
   /// Listening the onState Event for iOS WebView and Android
   /// content is Map for type: {shouldStart(iOS)|startLoad|finishLoad}
@@ -364,7 +368,7 @@ class FlutterWebviewPlugin {
 }
 
 class WebViewStateChanged {
-  WebViewStateChanged(this.type, this.url, this.navigationType);
+  WebViewStateChanged(this.type, this.url, this.navigationType, this.headers);
 
   factory WebViewStateChanged.fromMap(Map<String, dynamic> map) {
     WebViewState t;
@@ -382,12 +386,24 @@ class WebViewStateChanged {
         t = WebViewState.abortLoad;
         break;
     }
-    return WebViewStateChanged(t, map['url'], map['navigationType']);
+    return WebViewStateChanged(t, map['url'], map['navigationType'], map['headers']);
   }
 
   final WebViewState type;
   final String url;
   final int navigationType;
+  final Map headers;
+}
+
+class WebViewUrlChanged {
+  WebViewUrlChanged(this.url, this.headers);
+
+  factory WebViewUrlChanged.fromMap(Map<String, dynamic> map) {
+    return WebViewUrlChanged(map['url'], map['headers']);
+  }
+
+  final String url;
+  final Map headers;
 }
 
 class WebViewHttpError {
@@ -396,3 +412,4 @@ class WebViewHttpError {
   final String url;
   final String code;
 }
+
