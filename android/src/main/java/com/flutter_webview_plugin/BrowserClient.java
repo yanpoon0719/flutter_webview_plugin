@@ -3,13 +3,19 @@ package com.flutter_webview_plugin;
 import android.annotation.TargetApi;
 import android.graphics.Bitmap;
 import android.os.Build;
+import android.util.Log;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -19,6 +25,8 @@ import java.util.regex.Pattern;
 
 public class BrowserClient extends WebViewClient {
     private Pattern invalidUrlPattern = null;
+
+    private Map<String, Object> shouldStartUrlHeaders = new HashMap<>();
 
     public BrowserClient() {
         this(null);
@@ -44,20 +52,26 @@ public class BrowserClient extends WebViewClient {
         super.onPageStarted(view, url, favicon);
         Map<String, Object> data = new HashMap<>();
         data.put("url", url);
+        if (shouldStartUrlHeaders != null && shouldStartUrlHeaders.get("url") != null && shouldStartUrlHeaders.get("url").equals(url)) {
+            data.put("headers", shouldStartUrlHeaders.get("headers"));
+        }
         data.put("type", "startLoad");
         FlutterWebviewPlugin.channel.invokeMethod("onState", data);
     }
+
 
     @Override
     public void onPageFinished(WebView view, String url) {
         super.onPageFinished(view, url);
         Map<String, Object> data = new HashMap<>();
         data.put("url", url);
-
+        if (shouldStartUrlHeaders != null && shouldStartUrlHeaders.get("url") != null && shouldStartUrlHeaders.get("url").equals(url)) {
+            data.put("headers", shouldStartUrlHeaders.get("headers"));
+        }
         FlutterWebviewPlugin.channel.invokeMethod("onUrlChanged", data);
-
         data.put("type", "finishLoad");
         FlutterWebviewPlugin.channel.invokeMethod("onState", data);
+        shouldStartUrlHeaders = new HashMap<>();
 
     }
 
@@ -68,10 +82,26 @@ public class BrowserClient extends WebViewClient {
         // while returning false causes the WebView to continue loading the URL as usual.
         String url = request.getUrl().toString();
         boolean isInvalid = checkInvalidUrl(url);
+        Map<String, String> headers = request.getRequestHeaders();
+        Log.d("shouldOverrideUrl(r)", "request.getRequestHeaders(): "+headers);
         Map<String, Object> data = new HashMap<>();
         data.put("url", url);
-        data.put("type", isInvalid ? "abortLoad" : "shouldStart");
+        if (headers != null && !headers.isEmpty()) {
+            data.put("headers", headers);
+        }
 
+        data.put("type", isInvalid ? "abortLoad" : "shouldStart");
+        if (!isInvalid) {
+            shouldStartUrlHeaders = new HashMap<>();
+            shouldStartUrlHeaders.put("url", url);
+            if (data.containsKey("headers")) {
+                shouldStartUrlHeaders.put("headers", data.get("headers"));
+            }
+        }
+
+        Log.d("shouldOverrideUrl(r)", "data(url): "+data.get("url"));
+        Log.d("shouldOverrideUrl(r)", "data(headers): "+data.get("headers"));
+        Log.d("shouldOverrideUrl(r)", "data(type): "+data.get("type"));
         FlutterWebviewPlugin.channel.invokeMethod("onState", data);
         return isInvalid;
     }
@@ -84,6 +114,14 @@ public class BrowserClient extends WebViewClient {
         Map<String, Object> data = new HashMap<>();
         data.put("url", url);
         data.put("type", isInvalid ? "abortLoad" : "shouldStart");
+
+        if (!isInvalid) {
+            shouldStartUrlHeaders = new HashMap<>();
+            shouldStartUrlHeaders.put("url", url);
+        }
+
+        Log.d("shouldOverrideUrl", "data: "+data.get("url"));
+        Log.d("shouldOverrideUrl", "data: "+data.get("type"));
 
         FlutterWebviewPlugin.channel.invokeMethod("onState", data);
         return isInvalid;
@@ -109,6 +147,25 @@ public class BrowserClient extends WebViewClient {
         FlutterWebviewPlugin.channel.invokeMethod("onHttpError", data);
     }
 
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    @Override
+    public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+        Log.d("shouldInterceptRequest", "request.headers: "+request.getRequestHeaders().toString());
+        Log.d("shouldInterceptRequest", "request.url: "+request.getUrl().toString());
+
+        String thisUrl = request.getUrl().toString();
+        if (shouldStartUrlHeaders == null || shouldStartUrlHeaders.get("url") == null || shouldStartUrlHeaders.get("url").toString().isEmpty()) {
+            shouldStartUrlHeaders = new HashMap<>();
+            shouldStartUrlHeaders.put("url", thisUrl);
+        }
+
+        if (thisUrl.equals(shouldStartUrlHeaders.get("url"))){
+            shouldStartUrlHeaders.put("headers", request.getRequestHeaders());
+        }
+
+        return super.shouldInterceptRequest(view, request);
+    }
+
     private boolean checkInvalidUrl(String url) {
         if (invalidUrlPattern == null) {
             return false;
@@ -117,4 +174,5 @@ public class BrowserClient extends WebViewClient {
             return matcher.lookingAt();
         }
     }
+
 }
