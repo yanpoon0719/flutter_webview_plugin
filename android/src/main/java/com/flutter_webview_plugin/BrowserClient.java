@@ -26,7 +26,7 @@ import java.util.regex.Pattern;
 public class BrowserClient extends WebViewClient {
     private Pattern invalidUrlPattern = null;
 
-    private Map<String, Object> shouldStartUrlHeaders = new HashMap<>();
+    Map<String, Object> shouldStartUrlHeaders = new HashMap<>();
 
     public BrowserClient() {
         this(null);
@@ -106,7 +106,7 @@ public class BrowserClient extends WebViewClient {
         }
 
         Log.d("shouldOverrideUrl(r)", "data(url): "+data.get("url"));
-        Log.d("shouldOverrideUrl(r)", "data(headers): "+data.get("headers"));
+        Log.d("shouldOverrideUrl(r)", "data has headers? " + (data.containsKey("headers")));
         Log.d("shouldOverrideUrl(r)", "data(type): "+data.get("type"));
         FlutterWebviewPlugin.channel.invokeMethod("onState", data);
         return isInvalid;
@@ -158,7 +158,7 @@ public class BrowserClient extends WebViewClient {
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
     public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
-        Log.d("shouldInterceptRequest", "request.headers: "+request.getRequestHeaders().toString());
+        Log.d("shouldInterceptRequest", "request.headers is empty? "+request.getRequestHeaders().isEmpty());
         Log.d("shouldInterceptRequest", "request.url: "+request.getUrl().toString());
 
         String thisUrl = request.getUrl().toString();

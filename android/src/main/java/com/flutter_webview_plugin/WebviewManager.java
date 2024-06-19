@@ -459,6 +459,7 @@ class WebviewManager {
     }
 
     void reloadUrl(String url, Map<String, String> headers) {
+        webViewClient.shouldStartUrlHeaders.put("url", url);
         webView.loadUrl(url, headers);
     }
 
