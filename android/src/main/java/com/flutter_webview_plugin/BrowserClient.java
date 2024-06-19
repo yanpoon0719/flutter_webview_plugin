@@ -54,7 +54,12 @@ public class BrowserClient extends WebViewClient {
         data.put("url", url);
         if (shouldStartUrlHeaders != null && shouldStartUrlHeaders.get("url") != null && shouldStartUrlHeaders.get("url").equals(url)) {
             data.put("headers", shouldStartUrlHeaders.get("headers"));
+        }else if (shouldStartUrlHeaders == null || shouldStartUrlHeaders.get("url") == null || shouldStartUrlHeaders.get("url").toString().isEmpty()) {
+            shouldStartUrlHeaders = new HashMap<>();
+            shouldStartUrlHeaders.put("url", url);
         }
+        Log.d("onPageStarted", "shouldStartUrlHeaders: "+shouldStartUrlHeaders.toString());
+
         data.put("type", "startLoad");
         FlutterWebviewPlugin.channel.invokeMethod("onState", data);
     }
@@ -68,6 +73,7 @@ public class BrowserClient extends WebViewClient {
         if (shouldStartUrlHeaders != null && shouldStartUrlHeaders.get("url") != null && shouldStartUrlHeaders.get("url").equals(url)) {
             data.put("headers", shouldStartUrlHeaders.get("headers"));
         }
+        Log.d("onPageFinished", "shouldStartUrlHeaders: "+shouldStartUrlHeaders.toString());
         FlutterWebviewPlugin.channel.invokeMethod("onUrlChanged", data);
         data.put("type", "finishLoad");
         FlutterWebviewPlugin.channel.invokeMethod("onState", data);
@@ -135,6 +141,7 @@ public class BrowserClient extends WebViewClient {
         data.put("url", request.getUrl().toString());
         data.put("code", Integer.toString(errorResponse.getStatusCode()));
         FlutterWebviewPlugin.channel.invokeMethod("onHttpError", data);
+        shouldStartUrlHeaders = new HashMap<>();
     }
 
     @Override
@@ -145,6 +152,7 @@ public class BrowserClient extends WebViewClient {
         data.put("url", failingUrl);
         data.put("code", Integer.toString(errorCode));
         FlutterWebviewPlugin.channel.invokeMethod("onHttpError", data);
+        shouldStartUrlHeaders = new HashMap<>();
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
