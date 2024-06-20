@@ -58,7 +58,8 @@ public class BrowserClient extends WebViewClient {
             shouldStartUrlHeaders = new HashMap<>();
             shouldStartUrlHeaders.put("url", url);
         }
-        Log.d("onPageStarted", "shouldStartUrlHeaders: "+shouldStartUrlHeaders.toString());
+        data.put("lastStartedHeader", shouldStartUrlHeaders);
+        Log.d("onPageStarted", "shouldStartUrlHeaders: "+shouldStartUrlHeaders);
 
         data.put("type", "startLoad");
         FlutterWebviewPlugin.channel.invokeMethod("onState", data);
@@ -73,7 +74,8 @@ public class BrowserClient extends WebViewClient {
         if (shouldStartUrlHeaders != null && shouldStartUrlHeaders.get("url") != null && shouldStartUrlHeaders.get("url").equals(url)) {
             data.put("headers", shouldStartUrlHeaders.get("headers"));
         }
-        Log.d("onPageFinished", "shouldStartUrlHeaders: "+shouldStartUrlHeaders.toString());
+        data.put("lastStartedHeader", shouldStartUrlHeaders);
+        Log.d("onUrlChanged", "shouldStartUrlHeaders: "+shouldStartUrlHeaders);
         FlutterWebviewPlugin.channel.invokeMethod("onUrlChanged", data);
         data.put("type", "finishLoad");
         FlutterWebviewPlugin.channel.invokeMethod("onState", data);
@@ -104,6 +106,7 @@ public class BrowserClient extends WebViewClient {
                 shouldStartUrlHeaders.put("headers", data.get("headers"));
             }
         }
+        Log.d("shouldOverrideUrl(r)", "shouldStartUrlHeaders: "+shouldStartUrlHeaders);
 
         Log.d("shouldOverrideUrl(r)", "data(url): "+data.get("url"));
         Log.d("shouldOverrideUrl(r)", "data has headers? " + (data.containsKey("headers")));

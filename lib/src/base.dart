@@ -368,7 +368,7 @@ class FlutterWebviewPlugin {
 }
 
 class WebViewStateChanged {
-  WebViewStateChanged(this.type, this.url, this.navigationType, this.headers);
+  WebViewStateChanged(this.type, this.url, this.navigationType, this.headers, this.lastStartedUrlHeaders);
 
   factory WebViewStateChanged.fromMap(Map<String, dynamic> map) {
     WebViewState t;
@@ -386,13 +386,14 @@ class WebViewStateChanged {
         t = WebViewState.abortLoad;
         break;
     }
-    return WebViewStateChanged(t, map['url'], map['navigationType'], map['headers']);
+    return WebViewStateChanged(t, map['url'], map['navigationType'], map['headers'], map['lastStartedHeader']);
   }
 
   final WebViewState type;
   final String url;
   final int navigationType;
   final Map headers;
+  final Map lastStartedUrlHeaders;
 }
 
 class WebViewUrlChanged {
