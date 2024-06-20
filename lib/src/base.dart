@@ -397,14 +397,15 @@ class WebViewStateChanged {
 }
 
 class WebViewUrlChanged {
-  WebViewUrlChanged(this.url, this.headers);
+  WebViewUrlChanged(this.url, this.headers, this.lastStartedUrlHeaders);
 
   factory WebViewUrlChanged.fromMap(Map<String, dynamic> map) {
-    return WebViewUrlChanged(map['url'], map['headers']);
+    return WebViewUrlChanged(map['url'], map['headers'], map['lastStartedHeader']);
   }
 
   final String url;
   final Map headers;
+  final Map lastStartedUrlHeaders;
 }
 
 class WebViewHttpError {
