@@ -8,6 +8,7 @@ import android.content.Context;
 import android.net.http.SslError;
 import android.os.Build;
 import android.os.Handler;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -459,7 +460,9 @@ class WebviewManager {
     }
 
     void reloadUrl(String url, Map<String, String> headers) {
+        webViewClient.shouldStartUrlHeaders.remove("headers");
         webViewClient.shouldStartUrlHeaders.put("url", url);
+        Log.d("WebviewManager", "(When reloadUrl)shouldStartUrlHeaders: "+webViewClient.shouldStartUrlHeaders.toString());
         webView.loadUrl(url, headers);
     }
 
