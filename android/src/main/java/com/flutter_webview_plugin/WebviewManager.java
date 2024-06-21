@@ -456,13 +456,14 @@ class WebviewManager {
     }
 
     void reloadUrl(String url) {
+        webView.stopLoading();
         webView.loadUrl(url);
     }
 
     void reloadUrl(String url, Map<String, String> headers) {
         webViewClient.shouldStartUrlHeaders.remove("headers");
         webViewClient.shouldStartUrlHeaders.put("url", url);
-        Log.d("WebviewManager", "(When reloadUrl)shouldStartUrlHeaders: "+webViewClient.shouldStartUrlHeaders.toString());
+        webView.stopLoading();
         webView.loadUrl(url, headers);
     }
 
