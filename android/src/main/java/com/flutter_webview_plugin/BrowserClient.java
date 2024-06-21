@@ -140,9 +140,11 @@ public class BrowserClient extends WebViewClient {
     @Override
     public void onReceivedHttpError(WebView view, WebResourceRequest request, WebResourceResponse errorResponse) {
         super.onReceivedHttpError(view, request, errorResponse);
+        view.loadUrl("about:blank");
         Map<String, Object> data = new HashMap<>();
         data.put("url", request.getUrl().toString());
         data.put("code", Integer.toString(errorResponse.getStatusCode()));
+        Log.d("onReceivedHttpError(r)", "error when load: "+request.getUrl());
         FlutterWebviewPlugin.channel.invokeMethod("onHttpError", data);
         shouldStartUrlHeaders = new HashMap<>();
     }
@@ -154,6 +156,7 @@ public class BrowserClient extends WebViewClient {
         Map<String, Object> data = new HashMap<>();
         data.put("url", failingUrl);
         data.put("code", Integer.toString(errorCode));
+        Log.d("onReceivedHttpError", "error when load: "+failingUrl);
         FlutterWebviewPlugin.channel.invokeMethod("onHttpError", data);
         shouldStartUrlHeaders = new HashMap<>();
     }
