@@ -551,13 +551,17 @@ class WebviewManager {
 
     void hide(MethodCall call, MethodChannel.Result result) {
         if (webView != null) {
-            webView.setVisibility(View.GONE);
+            if (webView.getVisibility() != View.GONE) {
+                webView.setVisibility(View.GONE);
+            }
         }
     }
 
     void show(MethodCall call, MethodChannel.Result result) {
         if (webView != null) {
-            webView.setVisibility(View.VISIBLE);
+            if (webView.getVisibility() != View.VISIBLE) {
+                webView.setVisibility(View.VISIBLE);
+            }
         }
     }
 
