@@ -2,6 +2,7 @@ package com.flutter_webview_plugin;
 
 import android.annotation.TargetApi;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Build;
 import android.util.Log;
 import android.view.View;
@@ -53,11 +54,11 @@ public class BrowserClient extends WebViewClient {
         super.onPageStarted(view, url, favicon);
         Map<String, Object> data = new HashMap<>();
         data.put("url", url);
-        if (shouldStartUrlHeaders != null && shouldStartUrlHeaders.get("url") != null && shouldStartUrlHeaders.get("url").equals(url)) {
+        if (shouldStartUrlHeaders != null && shouldStartUrlHeaders.get("url") != null && isSameUrlLink(url, shouldStartUrlHeaders.get("url").toString())) {
             data.put("headers", shouldStartUrlHeaders.get("headers"));
         }else if (shouldStartUrlHeaders == null || shouldStartUrlHeaders.get("url") == null || shouldStartUrlHeaders.get("url").toString().isEmpty()) {
             shouldStartUrlHeaders = new HashMap<>();
-            shouldStartUrlHeaders.put("url", url);
+            shouldStartUrlHeaders.put("url", getUrlLink(Uri.parse(url)));
         }
         data.put("lastStartedHeader", shouldStartUrlHeaders);
         Log.d("onPageStarted", "shouldStartUrlHeaders: "+shouldStartUrlHeaders);
@@ -66,13 +67,22 @@ public class BrowserClient extends WebViewClient {
         FlutterWebviewPlugin.channel.invokeMethod("onState", data);
     }
 
+    boolean isSameUrlLink(String urlString1, String urlString2) {
+        Uri uri1 = Uri.parse(urlString1);
+        Uri uri2 = Uri.parse(urlString2);
+        return getUrlLink(uri1).equals(getUrlLink(uri2));
+    }
+
+    String getUrlLink(Uri targetUrl) {
+        return targetUrl.getScheme() + "://" + targetUrl.getAuthority() + targetUrl.getPath();
+    }
 
     @Override
     public void onPageFinished(WebView view, String url) {
         super.onPageFinished(view, url);
         Map<String, Object> data = new HashMap<>();
         data.put("url", url);
-        if (shouldStartUrlHeaders != null && shouldStartUrlHeaders.get("url") != null && shouldStartUrlHeaders.get("url").equals(url)) {
+        if (shouldStartUrlHeaders != null && shouldStartUrlHeaders.get("url") != null && isSameUrlLink(url, shouldStartUrlHeaders.get("url").toString())) {
             data.put("headers", shouldStartUrlHeaders.get("headers"));
         }
         data.put("lastStartedHeader", shouldStartUrlHeaders);
@@ -102,7 +112,7 @@ public class BrowserClient extends WebViewClient {
         data.put("type", isInvalid ? "abortLoad" : "shouldStart");
         if (!isInvalid) {
             shouldStartUrlHeaders = new HashMap<>();
-            shouldStartUrlHeaders.put("url", url);
+            shouldStartUrlHeaders.put("url", getUrlLink(Uri.parse(url)));
             if (data.containsKey("headers")) {
                 shouldStartUrlHeaders.put("headers", data.get("headers"));
             }
@@ -127,7 +137,7 @@ public class BrowserClient extends WebViewClient {
 
         if (!isInvalid) {
             shouldStartUrlHeaders = new HashMap<>();
-            shouldStartUrlHeaders.put("url", url);
+            shouldStartUrlHeaders.put("url", getUrlLink(Uri.parse(url)));
         }
 
         Log.d("shouldOverrideUrl", "data: "+data.get("url"));
@@ -169,10 +179,10 @@ public class BrowserClient extends WebViewClient {
         String thisUrl = request.getUrl().toString();
         if (shouldStartUrlHeaders == null || shouldStartUrlHeaders.get("url") == null || shouldStartUrlHeaders.get("url").toString().isEmpty()) {
             shouldStartUrlHeaders = new HashMap<>();
-            shouldStartUrlHeaders.put("url", thisUrl);
+            shouldStartUrlHeaders.put("url", getUrlLink(Uri.parse(thisUrl)));
         }
 
-        if (thisUrl.equals(shouldStartUrlHeaders.get("url"))){
+        if (isSameUrlLink(thisUrl, shouldStartUrlHeaders.get("url").toString())){
             shouldStartUrlHeaders.put("headers", request.getRequestHeaders());
         }
 
