@@ -44,9 +44,9 @@ class FlutterWebviewPlugin {
   final _onPostMessage = StreamController<JavascriptMessage>.broadcast();
 
   final Map<String, JavascriptChannel> _javascriptChannels =
-      // ignoring warning as min SDK version doesn't support collection literals yet
-      // ignore: prefer_collection_literals
-      Map<String, JavascriptChannel>();
+  // ignoring warning as min SDK version doesn't support collection literals yet
+  // ignore: prefer_collection_literals
+  Map<String, JavascriptChannel>();
 
   Future<Null> _handleMessages(MethodCall call) async {
     switch (call.method) {
@@ -146,33 +146,33 @@ class FlutterWebviewPlugin {
   /// - [useWideViewPort]: use wide viewport for Android webview ( setUseWideViewPort )
   /// - [ignoreSSLErrors]: use to bypass Android/iOS SSL checks e.g. for self-signed certificates
   Future<Null> launch(
-    String url, {
-    Map<String, String> headers,
-    Set<JavascriptChannel> javascriptChannels,
-    bool withJavascript,
-    bool clearCache,
-    bool clearCookies,
-    bool mediaPlaybackRequiresUserGesture,
-    bool hidden,
-    bool enableAppScheme,
-    Rect rect,
-    String userAgent,
-    bool withZoom,
-    bool displayZoomControls,
-    bool withLocalStorage,
-    bool withLocalUrl,
-    String localUrlScope,
-    bool withOverviewMode,
-    bool scrollBar,
-    bool supportMultipleWindows,
-    bool appCacheEnabled,
-    bool allowFileURLs,
-    bool useWideViewPort,
-    String invalidUrlRegex,
-    bool geolocationEnabled,
-    bool debuggingEnabled,
-    bool ignoreSSLErrors,
-  }) async {
+      String url, {
+        Map<String, String> headers,
+        Set<JavascriptChannel> javascriptChannels,
+        bool withJavascript,
+        bool clearCache,
+        bool clearCookies,
+        bool mediaPlaybackRequiresUserGesture,
+        bool hidden,
+        bool enableAppScheme,
+        Rect rect,
+        String userAgent,
+        bool withZoom,
+        bool displayZoomControls,
+        bool withLocalStorage,
+        bool withLocalUrl,
+        String localUrlScope,
+        bool withOverviewMode,
+        bool scrollBar,
+        bool supportMultipleWindows,
+        bool appCacheEnabled,
+        bool allowFileURLs,
+        bool useWideViewPort,
+        String invalidUrlRegex,
+        bool geolocationEnabled,
+        bool debuggingEnabled,
+        bool ignoreSSLErrors,
+      }) async {
     final args = <String, dynamic>{
       'url': url,
       'withJavascript': withJavascript ?? true,
@@ -345,7 +345,7 @@ class FlutterWebviewPlugin {
 
   Set<String> _extractJavascriptChannelNames(Set<JavascriptChannel> channels) {
     final Set<String> channelNames = channels == null
-        // ignore: prefer_collection_literals
+    // ignore: prefer_collection_literals
         ? Set<String>()
         : channels.map((JavascriptChannel channel) => channel.name).toSet();
     return channelNames;
@@ -368,7 +368,7 @@ class FlutterWebviewPlugin {
 }
 
 class WebViewStateChanged {
-  WebViewStateChanged(this.type, this.url, this.navigationType, this.headers);
+  WebViewStateChanged(this.type, this.url, this.navigationType, this.headers, this.loadedUrlHeaders);
 
   factory WebViewStateChanged.fromMap(Map<String, dynamic> map) {
     WebViewState t;
@@ -386,24 +386,26 @@ class WebViewStateChanged {
         t = WebViewState.abortLoad;
         break;
     }
-    return WebViewStateChanged(t, map['url'], map['navigationType'], map['headers']);
+    return WebViewStateChanged(t, map['url'], map['navigationType'], map['headers'], map['loadedUrlHeaders']);
   }
 
   final WebViewState type;
   final String url;
   final int navigationType;
   final Map headers;
+  final Map loadedUrlHeaders;
 }
 
 class WebViewUrlChanged {
-  WebViewUrlChanged(this.url, this.headers);
+  WebViewUrlChanged(this.url, this.headers, this.loadedUrlHeaders);
 
   factory WebViewUrlChanged.fromMap(Map<String, dynamic> map) {
-    return WebViewUrlChanged(map['url'], map['headers']);
+    return WebViewUrlChanged(map['url'], map['headers'], map['loadedUrlHeaders']);
   }
 
   final String url;
   final Map headers;
+  final Map loadedUrlHeaders;
 }
 
 class WebViewHttpError {

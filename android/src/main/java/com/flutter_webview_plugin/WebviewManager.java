@@ -449,16 +449,24 @@ class WebviewManager {
 
         if (headers != null) {
             webView.loadUrl(url, headers);
+            webViewClient.resetUrlHeaders();
+            webViewClient.insertUrlHeaders(url, headers);
         } else {
             webView.loadUrl(url);
+            webViewClient.resetUrlHeaders();
         }
     }
 
     void reloadUrl(String url) {
+        webViewClient.resetUrlHeaders();
+        webView.stopLoading();
         webView.loadUrl(url);
     }
 
     void reloadUrl(String url, Map<String, String> headers) {
+        webViewClient.resetUrlHeaders();
+        webViewClient.insertUrlHeaders(url, headers);
+        webView.stopLoading();
         webView.loadUrl(url, headers);
     }
 
@@ -546,13 +554,13 @@ class WebviewManager {
 
     void hide(MethodCall call, MethodChannel.Result result) {
         if (webView != null) {
-            webView.setVisibility(View.GONE);
+            if (webView.getVisibility() != View.GONE) webView.setVisibility(View.GONE);
         }
     }
 
     void show(MethodCall call, MethodChannel.Result result) {
         if (webView != null) {
-            webView.setVisibility(View.VISIBLE);
+            if (webView.getVisibility() != View.VISIBLE) webView.setVisibility(View.VISIBLE);
         }
     }
 
