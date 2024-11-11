@@ -100,7 +100,7 @@ class _MyHomePageState extends State<MyHomePage> {
   StreamSubscription _onDestroy;
 
   // On urlChanged stream
-  StreamSubscription<String> _onUrlChanged;
+  StreamSubscription<WebViewUrlChanged> _onUrlChanged;
 
   // On urlChanged stream
   StreamSubscription<WebViewStateChanged> _onStateChanged;
@@ -141,10 +141,10 @@ class _MyHomePageState extends State<MyHomePage> {
     });
 
     // Add a listener to on url changed
-    _onUrlChanged = flutterWebViewPlugin.onUrlChanged.listen((String url) {
+    _onUrlChanged = flutterWebViewPlugin.onUrlChanged.listen((WebViewUrlChanged urlChanged) {
       if (mounted) {
         setState(() {
-          _history.add('onUrlChanged: $url');
+          _history.add('onUrlChanged: ${urlChanged.url}');
         });
       }
     });
