@@ -11,7 +11,7 @@ version: 0.3.11
 maintainer: Rafal Wachol (@RafalWachol)
 
 environment:
-  sdk: ">=2.0.0 <3.0.0"
+  sdk: ">=2.0.0 <2.12.0"
 
 flutter:
   plugin:

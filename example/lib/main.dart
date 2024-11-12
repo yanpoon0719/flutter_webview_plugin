@@ -84,7 +84,7 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key key, this.title}) : super(key: key);
+  const MyHomePage({Key? key, required this.title}) : super(key: key);
 
   final String title;
 
@@ -97,21 +97,21 @@ class _MyHomePageState extends State<MyHomePage> {
   final flutterWebViewPlugin = FlutterWebviewPlugin();
 
   // On destroy stream
-  StreamSubscription _onDestroy;
+  StreamSubscription? _onDestroy;
 
   // On urlChanged stream
-  StreamSubscription<WebViewUrlChanged> _onUrlChanged;
+  StreamSubscription<WebViewUrlChanged>? _onUrlChanged;
 
   // On urlChanged stream
-  StreamSubscription<WebViewStateChanged> _onStateChanged;
+  StreamSubscription<WebViewStateChanged>? _onStateChanged;
 
-  StreamSubscription<WebViewHttpError> _onHttpError;
+  StreamSubscription<WebViewHttpError>? _onHttpError;
 
-  StreamSubscription<double> _onProgressChanged;
+  StreamSubscription<double>? _onProgressChanged;
 
-  StreamSubscription<double> _onScrollYChanged;
+  StreamSubscription<double>? _onScrollYChanged;
 
-  StreamSubscription<double> _onScrollXChanged;
+  StreamSubscription<double>? _onScrollXChanged;
 
   final _urlCtrl = TextEditingController(text: selectedUrl);
 
@@ -198,13 +198,13 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void dispose() {
     // Every listener should be canceled, the same should be done with this stream.
-    _onDestroy.cancel();
-    _onUrlChanged.cancel();
-    _onStateChanged.cancel();
-    _onHttpError.cancel();
-    _onProgressChanged.cancel();
-    _onScrollXChanged.cancel();
-    _onScrollYChanged.cancel();
+    _onDestroy?.cancel();
+    _onUrlChanged?.cancel();
+    _onStateChanged?.cancel();
+    _onHttpError?.cancel();
+    _onProgressChanged?.cancel();
+    _onScrollXChanged?.cancel();
+    _onScrollYChanged?.cancel();
 
     flutterWebViewPlugin.dispose();
 
